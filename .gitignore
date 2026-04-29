@@ -35,3 +35,6 @@ build/
 
 ### Claude Code ###
 .claude/
+
+### Local dev overrides — never commit secrets ###
+**/application-local.yml
