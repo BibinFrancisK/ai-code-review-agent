@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: codereviewer
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+github:
+  token: ${GITHUB_TOKEN}
+  webhook:
+    secret: ${GITHUB_WEBHOOK_SECRET}

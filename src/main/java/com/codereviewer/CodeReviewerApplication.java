@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CodereviewerApplication {
+public class CodeReviewerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CodereviewerApplication.class, args);
+		SpringApplication.run(CodeReviewerApplication.class, args);
 	}
 
 }
