@@ -1,7 +1,6 @@
 package com.codereviewer.config;
 
-import com.codereviewer.util.Constants;
-import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,20 +12,19 @@ import java.time.Duration;
 @Configuration
 public class LangChain4jConfig {
 
-    @Value("${openrouter.api-key}")
-    private String openRouterApiKey;
+    @Value("${google.gemini.api-key}")
+    private String geminiApiKey;
 
-    @Value("${openrouter.model}")
-    private String openRouterModel;
+    @Value("${google.gemini.model}")
+    private String geminiModel;
 
     @Bean
-    public OpenAiChatModel chatModel() {
-        log.info("Initializing OpenRouter chat model ({})", openRouterModel);
-        return OpenAiChatModel.builder()
-                .baseUrl(Constants.OPENROUTER_BASE_URL)
-                .apiKey(openRouterApiKey)
-                .modelName(openRouterModel)
-                .maxRetries(2)
+    public GoogleAiGeminiChatModel chatModel() {
+        log.info("Using Gemini model: {}", geminiModel);
+        return GoogleAiGeminiChatModel.builder()
+                .apiKey(geminiApiKey)
+                .modelName(geminiModel)
+                .maxRetries(0)
                 .timeout(Duration.ofSeconds(90))
                 .build();
     }

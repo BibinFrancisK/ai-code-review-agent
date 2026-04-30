@@ -24,6 +24,4 @@ public final class Constants {
     public static final String SIGNATURE_PREFIX = "sha256=";
     public static final String WEBHOOK_PATH = "/webhook/github";
 
-    // OpenRouter / LLM
-    public static final String OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 }
