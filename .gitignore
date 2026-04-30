@@ -34,7 +34,7 @@ build/
 .vscode/
 
 ### Claude Code ###
-.claude/
+.claude/settings.local.json
 
 ### Local dev overrides — never commit secrets ###
 **/application-local.yml
