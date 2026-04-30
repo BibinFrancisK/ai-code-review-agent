@@ -54,9 +54,8 @@ class CodeReviewAssistantSmokeTest {
                 """
                 + BUGGY_PATCH +
                 """
-                        
-                        Review this diff. Focus only on the changed lines and their immediate context.
-                        """;
+                Review this diff. Focus only on the changed lines and their immediate context.
+                """;
 
         String result = codeReviewAssistant.reviewPatch(prompt);
 
