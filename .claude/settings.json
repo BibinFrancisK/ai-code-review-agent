@@ -19,5 +19,18 @@
       "mcp__github__get_file_contents"
     ],
     "deny": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write|MultiEdit|Glob|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/block-local-config.js"
+          }
+        ]
+      }
+    ]
   }
 }

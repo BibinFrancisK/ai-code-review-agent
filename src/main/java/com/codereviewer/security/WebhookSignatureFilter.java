@@ -1,6 +1,7 @@
 package com.codereviewer.security;
 
 import com.codereviewer.config.GitHubConfig;
+import com.codereviewer.util.Constants;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,9 +23,6 @@ import java.util.HexFormat;
 @Order(1) // Sets the priority of this filter relative to other filters in the chain. Lower number = higher priority = runs first.
 public class WebhookSignatureFilter extends OncePerRequestFilter { //called at most once per request, even if the request is dispatched multiple times internally.
 
-    private static final String SIGNATURE_HEADER = "X-Hub-Signature-256";
-    private static final String HMAC_ALGORITHM = "HmacSHA256";
-
     private final GitHubConfig gitHubConfig;
 
     public WebhookSignatureFilter(GitHubConfig gitHubConfig) {
@@ -34,14 +32,14 @@ public class WebhookSignatureFilter extends OncePerRequestFilter { //called at m
     // Requests to /actuator/health, /api/reviews etc. should not be rejected.
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !"/webhook/github".equals(request.getRequestURI());
+        return !Constants.WEBHOOK_PATH.equals(request.getRequestURI());
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String signatureHeader = request.getHeader(SIGNATURE_HEADER);
+        String signatureHeader = request.getHeader(Constants.GITHUB_SIGNATURE_HEADER);
         if (signatureHeader == null) { //header is missing
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing signature header");
             return;
@@ -51,10 +49,10 @@ public class WebhookSignatureFilter extends OncePerRequestFilter { //called at m
 
         //Compute HMAC-SHA256, compare against header.
         try {
-            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
+            Mac mac = Mac.getInstance(Constants.HMAC_ALGORITHM);
             mac.init(new SecretKeySpec(
-                    gitHubConfig.getWebhookSecret().getBytes(StandardCharsets.UTF_8), HMAC_ALGORITHM));
-            String computed = "sha256=" + HexFormat.of().formatHex(mac.doFinal(rawBody));
+                    gitHubConfig.getWebhookSecret().getBytes(StandardCharsets.UTF_8), Constants.HMAC_ALGORITHM));
+            String computed = Constants.SIGNATURE_PREFIX + HexFormat.of().formatHex(mac.doFinal(rawBody));
 
             if (!MessageDigest.isEqual(
                     computed.getBytes(StandardCharsets.UTF_8),

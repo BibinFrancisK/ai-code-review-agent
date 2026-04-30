@@ -67,7 +67,17 @@ Safely review changes, validate quality, and create a pull request only if every
 
 ---
 
-## Rules
+## General Rules
 - NEVER modify code without explicit user approval.
 - NEVER proceed past a step if it fails.
 - ALWAYS show outputs (review, tests, commit message) before taking irreversible actions.
+
+## Security Rules
+- NEVER read or access sensitive configuration files:
+  - application-local.yml
+  - application-local.properties
+  - .env files
+  - secrets or key files
+
+- If access is required:
+  - STOP and ask the user explicitly

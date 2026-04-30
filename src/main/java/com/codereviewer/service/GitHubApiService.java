@@ -2,6 +2,7 @@ package com.codereviewer.service;
 
 import com.codereviewer.model.PullRequestFile;
 import com.codereviewer.model.PullRequestInfo;
+import com.codereviewer.util.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -20,7 +21,7 @@ public class GitHubApiService {
 
     public List<PullRequestFile> getFiles(String owner, String repo, int prNumber) {
         ResponseEntity<List<PullRequestFile>> response = githubRestClient.get()
-                .uri("/repos/{owner}/{repo}/pulls/{prNumber}/files", owner, repo, prNumber)
+                .uri(Constants.GITHUB_PR_FILES_PATH, owner, repo, prNumber)
                 .retrieve()
                 .toEntity(new ParameterizedTypeReference<>() {}); //ParameterizedTypeReference is needed since we are using List<T>
 
@@ -30,7 +31,7 @@ public class GitHubApiService {
 
     public PullRequestInfo getPrInfo(String owner, String repo, int prNumber) {
         ResponseEntity<PullRequestInfo> response = githubRestClient.get()
-                .uri("/repos/{owner}/{repo}/pulls/{prNumber}", owner, repo, prNumber)
+                .uri(Constants.GITHUB_PR_INFO_PATH, owner, repo, prNumber)
                 .retrieve()
                 .toEntity(PullRequestInfo.class);
 
@@ -39,7 +40,7 @@ public class GitHubApiService {
     }
 
     private void logRateLimit(ResponseEntity<?> response) {
-        String remaining = response.getHeaders().getFirst("X-RateLimit-Remaining");
+        String remaining = response.getHeaders().getFirst(Constants.GITHUB_RATE_LIMIT_HEADER);
         if (remaining != null) {
             log.debug("GitHub rate limit remaining: {}", remaining);
         }
