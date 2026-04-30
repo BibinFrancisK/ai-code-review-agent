@@ -14,3 +14,7 @@ github:
   token: ${GITHUB_TOKEN}
   webhook:
     secret: ${GITHUB_WEBHOOK_SECRET}
+
+openrouter:
+  api-key: ${OPENROUTER_API_KEY}
+  model: ${OPENROUTER_MODEL:google/gemma-4-26b-a4b-it:free}
