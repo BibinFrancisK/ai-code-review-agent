@@ -34,15 +34,15 @@ mvn test -Dtest=GeminiModelListTest
 
 The app reads secrets from the environment — never from `application.properties`:
 
-| Variable | Purpose |
-|---|---|
-| `GITHUB_TOKEN` | GitHub API auth (fetch diffs, post comments) |
-| `GITHUB_WEBHOOK_SECRET` | HMAC-SHA256 webhook signature verification |
-| `GOOGLE_GEMINI_API_KEY` | Google AI Studio API key for Gemini LLM |
-| `GOOGLE_GEMINI_MODEL` | Gemini model name (default: `gemini-2.0-flash`) |
+| Variable | Purpose                                              |
+|---|------------------------------------------------------|
+| `GITHUB_TOKEN` | GitHub API auth (fetch diffs, post comments)         |
+| `GITHUB_WEBHOOK_SECRET` | HMAC-SHA256 webhook signature verification           |
+| `GOOGLE_GEMINI_API_KEY` | Google AI Studio API key for Gemini LLM from aistudio.google.com        |
+| `GOOGLE_GEMINI_MODEL` | Gemini model name (default: `gemini-2.0-flash`)      |
 | `SPRING_DATASOURCE_URL` | e.g. `jdbc:postgresql://localhost:5432/codereviewer` |
-| `SPRING_DATASOURCE_USERNAME` | DB user |
-| `SPRING_DATASOURCE_PASSWORD` | DB password |
+| `SPRING_DATASOURCE_USERNAME` | DB user                                              |
+| `SPRING_DATASOURCE_PASSWORD` | DB password                                          |
 
 For local dev, use `application-local.yml` (git-ignored) with `spring.profiles.active=local`.
 

@@ -36,7 +36,8 @@ class GeminiModelListTest {
     void listAvailableModels() throws Exception {
         String json = RestClient.create()
                 .get()
-                .uri(MODELS_URL + "?key=" + apiKey)
+                .uri(MODELS_URL)
+                .header("x-goog-api-key", apiKey)
                 .retrieve()
                 .body(String.class);
 
