@@ -22,6 +22,12 @@ mvn package -DskipTests
 
 # Run locally (requires PostgreSQL + env vars — see Environment Variables below)
 mvn spring-boot:run
+
+# Run LLM smoke test (disabled by default — remove @Disabled first)
+mvn test -Dtest=CodeReviewAssistantSmokeTest
+
+# List available Gemini models for your API key (disabled by default — remove @Disabled first)
+mvn test -Dtest=GeminiModelListTest
 ```
 
 ## Environment Variables
@@ -32,7 +38,8 @@ The app reads secrets from the environment — never from `application.propertie
 |---|---|
 | `GITHUB_TOKEN` | GitHub API auth (fetch diffs, post comments) |
 | `GITHUB_WEBHOOK_SECRET` | HMAC-SHA256 webhook signature verification |
-| `OPENROUTER_API_KEY` | LLM access via OpenRouter |
+| `GOOGLE_GEMINI_API_KEY` | Google AI Studio API key for Gemini LLM |
+| `GOOGLE_GEMINI_MODEL` | Gemini model name (default: `gemini-2.0-flash`) |
 | `SPRING_DATASOURCE_URL` | e.g. `jdbc:postgresql://localhost:5432/codereviewer` |
 | `SPRING_DATASOURCE_USERNAME` | DB user |
 | `SPRING_DATASOURCE_PASSWORD` | DB password |
@@ -74,11 +81,27 @@ This is a Spring Boot 3.x webhook receiver that reviews GitHub PRs automatically
 
 ## LLM Integration
 
-- Provider: OpenRouter (`https://openrouter.ai/api/v1`) using the OpenAI-compatible SDK that LangChain4j already uses
-- Default model: `deepseek/deepseek-r1:free` (fallback: `mistralai/mistral-7b-instruct:free`)
+- Provider: Google Gemini (direct via Google AI Studio key)
+- Default model: `gemini-2.0-flash` (override with `GOOGLE_GEMINI_MODEL` env var — optional)
 - LangChain4j version: `0.36.0` (managed via BOM)
-- The `CodeReviewAssistant` interface uses `@AiService` and returns `ReviewOutput` — LangChain4j handles JSON parsing automatically
-- Retry: `.maxRetries(2)` on the ChatModel builder; on parse failure, retry once then skip the chunk
+- Dependency: `langchain4j-google-ai-gemini` (core module; no Spring Boot starter needed — bean is defined manually in `LangChain4jConfig`)
+- The `CodeReviewAssistant` interface uses `@AiService` and returns `String` — prompt is passed via `@UserMessage`
+- Retry: `.maxRetries(0)` — auto-retry is disabled to avoid burning free-tier quota; retry logic belongs at the service layer
+
+### Free-tier quota notes
+
+The Gemini free tier has a daily request cap per model. If you hit a 429:
+1. Run `GeminiModelListTest` to see all models your key can access
+2. Set `GOOGLE_GEMINI_MODEL` in `application-local.yml` to a model with remaining quota (e.g. `gemini-2.0-flash-lite`)
+3. Quota resets at midnight Pacific time
+
+```bash
+# List available models for your API key
+mvn test -Dtest=GeminiModelListTest
+
+# Run the LLM smoke test (requires PostgreSQL + API key in application-local.yml)
+mvn test -Dtest=CodeReviewAssistantSmokeTest
+```
 
 ## Branch & PR Convention
 
