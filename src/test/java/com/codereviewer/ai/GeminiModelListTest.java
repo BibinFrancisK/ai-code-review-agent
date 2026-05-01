@@ -15,10 +15,9 @@ import java.util.List;
 
 /**
  * Lists all Gemini models available for your API key that support generateContent.
- * Run once to find available models when hitting quota limits.
  * Before running locally:
- * 1. Start PostgreSQL:  docker compose up -d
- * 2. Set the LLM API key in your environment or application-local.yml
+ * 1. Set environment variables GITHUB_TOKEN and GOOGLE_GEMINI_API_KEY
+ * 2. Run ` docker compose up -d `
  * 3. Enable the test
  */
 @Disabled("Run on a need-basis")
