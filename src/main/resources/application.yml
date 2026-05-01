@@ -18,4 +18,4 @@ github:
 google:
   gemini:
     api-key: ${GOOGLE_GEMINI_API_KEY}
-    model: ${GOOGLE_GEMINI_MODEL:gemini-2.0-flash}
+    model: ${GOOGLE_GEMINI_MODEL:gemini-flash-latest}
