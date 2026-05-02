@@ -21,7 +21,17 @@ class DiffChunkerServiceTest {
 
     @Test
     void startLine_matchesHunkHeader() {
-        // Hunk header says new file starts at line 42
+
+        ///   A hunk is one contiguous block of changes within a file's diff.
+        ///   Hunk header format: @@ -<old_start>,<old_count> +<new_start>,<new_count> @@
+        ///   ┌───────┬────────────────────────────────────────────────────────────────┐
+        ///   │ Part  │                            Meaning                             │
+        ///   ├───────┼────────────────────────────────────────────────────────────────┤
+        ///   │ -10,3 │ In the old file, this hunk starts at line 10 and spans 3 lines │
+        ///   ├───────┼────────────────────────────────────────────────────────────────┤
+        ///   │ +42,3 │ In the new file, this hunk starts at line 42 and spans 3 lines │
+        ///   └───────┴────────────────────────────────────────────────────────────────┘
+
         String patch = """
                 @@ -10,3 +42,3 @@
                  context line one
