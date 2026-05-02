@@ -15,10 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Smoke test for the LLM integration.
- * Before running locally:
- * 1. Set environment variables GITHUB_TOKEN and GOOGLE_GEMINI_API_KEY
- * 2. Run ` docker compose up -d `
- * 3. Enable the test
+ * See src/test/README.md for setup and run instructions.
  */
 @Disabled("Run on a need-basis")
 @SpringBootTest
