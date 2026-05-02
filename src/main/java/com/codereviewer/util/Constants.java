@@ -1,8 +1,67 @@
 package com.codereviewer.util;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 public final class Constants {
 
     private Constants() {}
+
+    // DiffChunkerService
+    public static final int MAX_CHUNK_LINES = 150;
+
+    public static final Pattern HUNK_HEADER = Pattern.compile(
+            "^@@ -\\d+(?:,\\d+)? \\+(\\d+)(?:,(\\d+))? @@"
+    );
+
+    public static final Set<String> SKIPPED_FILENAMES = Set.of(
+            "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "go.sum", "cargo.lock"
+    );
+
+    public static final Set<String> SKIPPED_EXTENSIONS = Set.of(
+            "png", "jpg", "jpeg", "gif", "ico", "svg", "webp",
+            "class", "jar", "war", "ear",
+            "zip", "tar", "gz", "7z"
+    );
+
+    public static final Map<String, String> LANGUAGE_MAP = Map.ofEntries(
+            Map.entry("java", "java"),
+            Map.entry("kt", "kotlin"),
+            Map.entry("kts", "kotlin"),
+            Map.entry("scala", "scala"),
+            Map.entry("groovy", "groovy"),
+            Map.entry("py", "python"),
+            Map.entry("js", "javascript"),
+            Map.entry("mjs", "javascript"),
+            Map.entry("cjs", "javascript"),
+            Map.entry("ts", "typescript"),
+            Map.entry("tsx", "typescript"),
+            Map.entry("jsx", "javascript"),
+            Map.entry("go", "go"),
+            Map.entry("rs", "rust"),
+            Map.entry("c", "c"),
+            Map.entry("cpp", "cpp"),
+            Map.entry("cs", "csharp"),
+            Map.entry("rb", "ruby"),
+            Map.entry("php", "php"),
+            Map.entry("swift", "swift"),
+            Map.entry("html", "html"),
+            Map.entry("css", "css"),
+            Map.entry("scss", "scss"),
+            Map.entry("less", "less"),
+            Map.entry("xml", "xml"),
+            Map.entry("json", "json"),
+            Map.entry("yaml", "yaml"),
+            Map.entry("yml", "yaml"),
+            Map.entry("toml", "toml"),
+            Map.entry("sh", "bash"),
+            Map.entry("bash", "bash"),
+            Map.entry("sql", "sql"),
+            Map.entry("md", "markdown"),
+            Map.entry("tf", "terraform"),
+            Map.entry("dockerfile", "dockerfile")
+    );
 
     // GitHub API
     public static final String GITHUB_API_BASE_URL = "https://api.github.com";
