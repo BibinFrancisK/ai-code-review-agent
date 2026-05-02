@@ -63,6 +63,9 @@ public final class Constants {
             Map.entry("dockerfile", "dockerfile")
     );
 
+    // PullRequestService
+    public static final Set<String> PROCESSED_ACTIONS = Set.of("opened", "synchronize");
+
     // GitHub API
     public static final String GITHUB_API_BASE_URL = "https://api.github.com";
     public static final String GITHUB_ACCEPT_HEADER = "application/vnd.github+json";

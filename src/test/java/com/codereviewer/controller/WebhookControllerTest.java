@@ -2,12 +2,14 @@ package com.codereviewer.controller;
 
 import com.codereviewer.config.GitHubConfig;
 import com.codereviewer.security.WebhookSignatureFilter;
+import com.codereviewer.service.PullRequestService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.crypto.Mac;
@@ -32,15 +34,18 @@ class WebhookControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @MockitoBean
+    private PullRequestService pullRequestService;
+
     @Test
-    void validSignature_returns200() throws Exception {
+    void validSignature_returns202() throws Exception {
         String body = "{\"action\":\"opened\"}";
 
         mockMvc.perform(post("/webhook/github")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SIGNATURE_HEADER, computeSignature(TEST_SECRET, body))
                         .content(body))
-                .andExpect(status().isOk());
+                .andExpect(status().isAccepted());
     }
 
     @Test
