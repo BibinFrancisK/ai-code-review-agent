@@ -29,8 +29,8 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 class PullRequestServiceIntegrationTest {
 
     private static final String OWNER = "BibinFrancisK";
-    private static final String REPO = "ai-code-review-agent";
-    private static final int PR_NUMBER = 7;
+    private static final String REPO = "ai-cloud-architecture-advisor";
+    private static final int PR_NUMBER = 1;
 
     @Autowired
     private GitHubApiService gitHubApiService;

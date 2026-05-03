@@ -2,8 +2,23 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: codereviewer
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${CODE_REVIEWER_POSTGRES_DB}
+      POSTGRES_USER: ${CODE_REVIEWER_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${CODE_REVIEWER_POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${CODE_REVIEWER_POSTGRES_PORT}:5432"
+    volumes:
+      # This is a named volume (data lives inside Docker's internal storage).
+      # To persist data across volume deletions, replace with a bind mount:
+      #   - ./pgdata:/var/lib/postgresql/data
+      # That writes directly ./pgdata/.
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CODE_REVIEWER_POSTGRES_USER} -d ${CODE_REVIEWER_POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  pgdata:

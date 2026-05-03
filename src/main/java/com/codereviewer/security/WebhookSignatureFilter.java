@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,6 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
+@Slf4j
 @Component
 @Order(1) // Sets the priority of this filter relative to other filters in the chain. Lower number = higher priority = runs first.
 public class WebhookSignatureFilter extends OncePerRequestFilter { //called at most once per request, even if the request is dispatched multiple times internally.
@@ -40,14 +42,14 @@ public class WebhookSignatureFilter extends OncePerRequestFilter { //called at m
             throws ServletException, IOException {
 
         String signatureHeader = request.getHeader(Constants.GITHUB_SIGNATURE_HEADER);
-        if (signatureHeader == null) { //header is missing
+        if (signatureHeader == null) {
+            log.warn("Webhook rejected: missing {} header", Constants.GITHUB_SIGNATURE_HEADER);
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing signature header");
             return;
         }
 
-        byte[] rawBody = request.getInputStream().readAllBytes(); //drains the input stream into a byte[], but we have ReReadableRequestWrapper
+        byte[] rawBody = request.getInputStream().readAllBytes();
 
-        //Compute HMAC-SHA256, compare against header.
         try {
             Mac mac = Mac.getInstance(Constants.HMAC_ALGORITHM);
             mac.init(new SecretKeySpec(
@@ -57,10 +59,12 @@ public class WebhookSignatureFilter extends OncePerRequestFilter { //called at m
             if (!MessageDigest.isEqual(
                     computed.getBytes(StandardCharsets.UTF_8),
                     signatureHeader.getBytes(StandardCharsets.UTF_8))) {
+                log.warn("Webhook rejected: signature mismatch");
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid signature");
                 return;
             }
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            log.error("Webhook rejected: HMAC computation failed — {}", e.getMessage());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Signature verification failed");
             return;
         }

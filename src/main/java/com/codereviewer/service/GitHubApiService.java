@@ -1,5 +1,7 @@
 package com.codereviewer.service;
 
+import com.codereviewer.model.GitHubReviewComment;
+import com.codereviewer.model.GitHubReviewPayload;
 import com.codereviewer.model.PullRequestFile;
 import com.codereviewer.model.PullRequestInfo;
 import com.codereviewer.util.Constants;
@@ -12,7 +14,7 @@ import org.springframework.web.client.RestClient;
 
 import java.util.List;
 
-@Slf4j //generates a static final log instance
+@Slf4j
 @Service
 @RequiredArgsConstructor //generates a constructor that takes all final fields as parameter
 public class GitHubApiService {
@@ -37,6 +39,21 @@ public class GitHubApiService {
 
         logRateLimit(response);
         return response.getBody();
+    }
+
+    public void postReview(String owner, String repo, int prNumber,
+                           String reviewBody, List<GitHubReviewComment> comments) {
+        GitHubReviewPayload payload = new GitHubReviewPayload("COMMENT", reviewBody,
+                comments.isEmpty() ? null : comments);
+
+        githubRestClient.post()
+                .uri(Constants.GITHUB_PR_REVIEWS_PATH, owner, repo, prNumber)
+                .body(payload)
+                .retrieve()
+                .toBodilessEntity();
+
+        log.info("Posted review to {}/{} PR#{} — {} inline comment(s)",
+                owner, repo, prNumber, comments.size());
     }
 
     private void logRateLimit(ResponseEntity<?> response) {
