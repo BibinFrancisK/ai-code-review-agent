@@ -63,6 +63,12 @@ public final class Constants {
             Map.entry("dockerfile", "dockerfile")
     );
 
+    // Review severities (ordered highest → lowest)
+    public static final String SEVERITY_CRITICAL = "CRITICAL";
+    public static final String SEVERITY_HIGH     = "HIGH";
+    public static final String SEVERITY_MEDIUM   = "MEDIUM";
+    public static final String SEVERITY_LOW      = "LOW";
+
     // PullRequestService
     public static final Set<String> PROCESSED_ACTIONS = Set.of("opened", "synchronize");
 
@@ -72,8 +78,9 @@ public final class Constants {
     public static final String GITHUB_API_VERSION_HEADER = "X-GitHub-Api-Version";
     public static final String GITHUB_API_VERSION = "2022-11-28";
     public static final String GITHUB_RATE_LIMIT_HEADER = "X-RateLimit-Remaining";
-    public static final String GITHUB_PR_FILES_PATH = "/repos/{owner}/{repo}/pulls/{prNumber}/files";
-    public static final String GITHUB_PR_INFO_PATH = "/repos/{owner}/{repo}/pulls/{prNumber}";
+    public static final String GITHUB_PR_FILES_PATH    = "/repos/{owner}/{repo}/pulls/{prNumber}/files";
+    public static final String GITHUB_PR_INFO_PATH     = "/repos/{owner}/{repo}/pulls/{prNumber}";
+    public static final String GITHUB_PR_REVIEWS_PATH  = "/repos/{owner}/{repo}/pulls/{prNumber}/reviews";
 
     // HTTP / Auth
     public static final String HEADER_AUTHORIZATION = "Authorization";
