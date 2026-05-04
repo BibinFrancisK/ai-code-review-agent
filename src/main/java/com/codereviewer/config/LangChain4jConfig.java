@@ -24,8 +24,8 @@ public class LangChain4jConfig {
         return GoogleAiGeminiChatModel.builder()
                 .apiKey(geminiApiKey)
                 .modelName(geminiModel)
-                .maxRetries(0)
-                .timeout(Duration.ofSeconds(90))
+                .maxRetries(2)
+                .timeout(Duration.ofSeconds(120))
                 .build();
     }
 }
