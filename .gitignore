@@ -38,3 +38,4 @@ build/
 
 ### Local dev overrides — never commit secrets ###
 **/application-local.yml
+.env

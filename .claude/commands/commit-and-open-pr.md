@@ -15,6 +15,7 @@ Safely review changes, validate quality, and create a pull request only if every
     - Missing error handling
     - Security concerns
     - Violations of project conventions
+    - No wildcard Java imports
 
 ### 2. Report Issues (If Any)
 - If any issues are found:
