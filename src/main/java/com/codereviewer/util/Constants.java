@@ -81,6 +81,7 @@ public final class Constants {
     public static final String GITHUB_PR_FILES_PATH    = "/repos/{owner}/{repo}/pulls/{prNumber}/files";
     public static final String GITHUB_PR_INFO_PATH     = "/repos/{owner}/{repo}/pulls/{prNumber}";
     public static final String GITHUB_PR_REVIEWS_PATH  = "/repos/{owner}/{repo}/pulls/{prNumber}/reviews";
+    public static final String GITHUB_ISSUE_COMMENTS_PATH = "/repos/{owner}/{repo}/issues/{prNumber}/comments";
 
     // HTTP / Auth
     public static final String HEADER_AUTHORIZATION = "Authorization";

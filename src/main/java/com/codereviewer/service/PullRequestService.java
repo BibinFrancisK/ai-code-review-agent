@@ -6,6 +6,7 @@ import com.codereviewer.model.DiffChunk;
 import com.codereviewer.model.PullRequestEvent;
 import com.codereviewer.model.PullRequestFile;
 import com.codereviewer.model.ReviewComment;
+import com.codereviewer.model.ReviewOutcome;
 import com.codereviewer.model.ReviewReport;
 import com.codereviewer.repository.ReviewRepository;
 import com.codereviewer.util.Constants;
@@ -31,10 +32,10 @@ public class PullRequestService {
     private final ReviewRepository reviewRepository;
 
     @Async
-    public CompletableFuture<Void> handlePullRequestEvent(PullRequestEvent event) {
+    public CompletableFuture<ReviewOutcome> handlePullRequestEvent(PullRequestEvent event) {
         if (!Constants.PROCESSED_ACTIONS.contains(event.action())) {
             log.debug("Ignoring PR event with action '{}'", event.action());
-            return CompletableFuture.completedFuture(null);
+            return CompletableFuture.completedFuture(ReviewOutcome.SKIPPED);
         }
 
         int prNumber = event.pullRequest().number();
@@ -43,26 +44,33 @@ public class PullRequestService {
         String owner = parts[0];
         String repo = parts[1];
 
-        log.info("Processing PR #{} ({}) — action: {}", prNumber, fullName, event.action());
+        log.info("repo: {}/{} PR:#{}: processing — action: {}", owner, repo, prNumber, event.action());
 
         List<PullRequestFile> files = gitHubApiService.getFiles(owner, repo, prNumber);
         List<DiffChunk> chunks = diffChunkerService.chunk(files);
 
-        log.info("PR #{}: {} files → {} chunks", prNumber, files.size(), chunks.size());
+        log.info("repo: {}/{} PR:#{}: {} files → {} chunks", owner, repo, prNumber, files.size(), chunks.size());
 
+        long reviewStartTime = System.nanoTime();
         ReviewReport report = llmReviewService.review(prNumber, chunks);
+        long reviewEndTime = (System.nanoTime() - reviewStartTime) / 1_000_000;
+        log.info("repo: {}/{} PR:#{}: LLM review completed in {}ms — {} comment(s)", owner, repo, prNumber, reviewEndTime, report.totalComments());
 
         logReport(report);
 
+        ReviewOutcome outcome;
         try {
-            reviewPublisherService.publish(owner, repo, prNumber, report);
+            outcome = reviewPublisherService.publish(owner, repo, prNumber, report);
         } catch (Exception e) {
-            log.error("PR #{}: failed to post review to GitHub — {}", prNumber, e.getMessage(), e);
+            log.error("repo: {}/{} PR:#{}: failed to post review to GitHub — {}", owner, repo, prNumber, e.getMessage(), e);
+            outcome = ReviewOutcome.FAILED;
         }
+
+        log.info("repo: {}/{} PR:#{}: review outcome = {}", owner, repo, prNumber, outcome);
 
         persistReview(event, owner, repo, prNumber, report);
 
-        return CompletableFuture.completedFuture(null);
+        return CompletableFuture.completedFuture(outcome);
     }
 
     private void persistReview(PullRequestEvent event, String owner, String repo,

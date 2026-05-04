@@ -13,10 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor //generates a constructor that takes all final fields as parameter
+@RequiredArgsConstructor
 public class GitHubApiService {
 
     private final RestClient githubRestClient;
@@ -54,6 +55,16 @@ public class GitHubApiService {
 
         log.info("Posted review to {}/{} PR#{} — {} inline comment(s)",
                 owner, repo, prNumber, comments.size());
+    }
+
+    public void postIssueFallbackComment(String owner, String repo, int prNumber, String body) {
+        githubRestClient.post()
+                .uri(Constants.GITHUB_ISSUE_COMMENTS_PATH, owner, repo, prNumber)
+                .body(Map.of("body", body))
+                .retrieve()
+                .toBodilessEntity();
+
+        log.info("Posted fallback summary comment to {}/{} PR#{}", owner, repo, prNumber);
     }
 
     private void logRateLimit(ResponseEntity<?> response) {
