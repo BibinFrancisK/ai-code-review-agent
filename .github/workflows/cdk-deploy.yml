@@ -1,0 +1,43 @@
+name: Deploy to AWS (CDK)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: CDK Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cdk/package-lock.json
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Install CDK dependencies
+        working-directory: cdk
+        run: npm ci
+
+      - name: CDK Bootstrap
+        working-directory: cdk
+        run: cdk bootstrap
+
+      - name: CDK Deploy
+        working-directory: cdk
+        run: |
+          cdk deploy --require-approval never \
+            --context dockerhubUsername=${{ secrets.DOCKERHUB_USERNAME }}
