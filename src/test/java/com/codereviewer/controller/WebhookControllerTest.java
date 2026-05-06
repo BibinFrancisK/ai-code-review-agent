@@ -1,6 +1,8 @@
 package com.codereviewer.controller;
 
 import com.codereviewer.config.GitHubConfig;
+import com.codereviewer.config.SecurityConfig;
+import com.codereviewer.security.GitHubTokenIntrospector;
 import com.codereviewer.security.WebhookSignatureFilter;
 import com.codereviewer.service.PullRequestService;
 import org.junit.jupiter.api.Test;
@@ -21,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(WebhookController.class)
-@Import({GitHubConfig.class, WebhookSignatureFilter.class})
+@Import({GitHubConfig.class, WebhookSignatureFilter.class, SecurityConfig.class})
 @TestPropertySource(properties = {
         "github.webhook.secret=test-secret",
         "github.token=test-token"
@@ -33,6 +35,9 @@ class WebhookControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private GitHubTokenIntrospector gitHubTokenIntrospector;
 
     @MockitoBean
     private PullRequestService pullRequestService;

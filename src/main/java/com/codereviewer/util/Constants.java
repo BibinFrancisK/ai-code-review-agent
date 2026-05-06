@@ -94,4 +94,16 @@ public final class Constants {
     public static final String SIGNATURE_PREFIX = "sha256=";
     public static final String WEBHOOK_PATH = "/webhook/github";
 
+    // GitHub user introspection
+    public static final String GITHUB_USER_URL         = GITHUB_API_BASE_URL + "/user";
+    public static final String GITHUB_USER_LOGIN_FIELD = "login";
+    public static final String GITHUB_USER_ID_FIELD    = "id";
+    public static final String GITHUB_SCOPE_READ_USER  = "SCOPE_read:user";
+
+    // Security — endpoint matchers
+    public static final String ACTUATOR_HEALTH_PATH = "/actuator/health";
+    public static final String ACTUATOR_INFO_PATH   = "/actuator/info";
+    public static final String ACTUATOR_ALL_PATH    = "/actuator/**";
+    public static final String API_REVIEWS_PATH     = "/api/reviews/**";
+
 }
