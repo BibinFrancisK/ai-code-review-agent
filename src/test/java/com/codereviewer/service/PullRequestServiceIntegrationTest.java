@@ -30,7 +30,7 @@ class PullRequestServiceIntegrationTest {
 
     private static final String OWNER = "BibinFrancisK";
     private static final String REPO = "ai-cloud-architecture-advisor";
-    private static final int PR_NUMBER = 1;
+    private static final int PR_NUMBER = 4;
 
     @Autowired
     private GitHubApiService gitHubApiService;
