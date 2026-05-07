@@ -26,6 +26,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(Constants.WEBHOOK_PATH).permitAll() // HMAC-256 signed
                         .requestMatchers(Constants.ACTUATOR_HEALTH_PATH, Constants.ACTUATOR_INFO_PATH).permitAll()
+                        .requestMatchers(Constants.SWAGGER_UI_PATH, Constants.SWAGGER_UI_HTML, Constants.OPENAPI_DOCS_PATH).permitAll()
                         .requestMatchers(Constants.ACTUATOR_ALL_PATH).authenticated()
                         .requestMatchers(Constants.API_REVIEWS_PATH).authenticated()
                         .anyRequest().authenticated()
