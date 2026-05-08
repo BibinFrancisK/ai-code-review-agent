@@ -1,6 +1,7 @@
 package com.codereviewer.config;
 
 import com.codereviewer.util.Constants;
+import org.springframework.boot.web.client.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -27,14 +28,19 @@ public class AppConfig {
     }
 
     @Bean
-    public RestClient githubRestClient(RestClient.Builder builder, GitHubConfig gitHubConfig) {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(Duration.ofSeconds(10));
-        factory.setReadTimeout(Duration.ofSeconds(30));
+    public RestClientCustomizer githubRestClientTimeouts() {
+        return builder -> {
+            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+            factory.setConnectTimeout(Duration.ofSeconds(10));
+            factory.setReadTimeout(Duration.ofSeconds(30));
+            builder.requestFactory(factory);
+        };
+    }
 
+    @Bean
+    public RestClient githubRestClient(RestClient.Builder builder, GitHubConfig gitHubConfig) {
         return builder
                 .baseUrl(Constants.GITHUB_API_BASE_URL)
-                .requestFactory(factory)
                 .defaultHeader(Constants.HEADER_AUTHORIZATION, Constants.BEARER_PREFIX + gitHubConfig.getToken())
                 .defaultHeader(Constants.HEADER_ACCEPT, Constants.GITHUB_ACCEPT_HEADER)
                 .defaultHeader(Constants.GITHUB_API_VERSION_HEADER, Constants.GITHUB_API_VERSION)
