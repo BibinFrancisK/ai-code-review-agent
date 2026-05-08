@@ -10,6 +10,10 @@ import com.codereviewer.model.ReviewOutcome;
 import com.codereviewer.model.ReviewReport;
 import com.codereviewer.repository.ReviewRepository;
 import com.codereviewer.util.Constants;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -30,6 +34,16 @@ public class PullRequestService {
     private final LLMReviewService llmReviewService;
     private final ReviewPublisherService reviewPublisherService;
     private final ReviewRepository reviewRepository;
+    private final MeterRegistry meterRegistry;
+
+    private Timer llmReviewTimer;
+
+    @PostConstruct
+    void initMetrics() {
+        llmReviewTimer = Timer.builder("llm.review.duration")
+                .description("End-to-end LLM review time per PR")
+                .register(meterRegistry);
+    }
 
     @Async
     public CompletableFuture<ReviewOutcome> handlePullRequestEvent(PullRequestEvent event) {
@@ -52,10 +66,10 @@ public class PullRequestService {
 
             log.info("repo: {}/{} PR:#{}: {} files → {} chunks", owner, repo, prNumber, files.size(), chunks.size());
 
-            long reviewStartTime = System.nanoTime();
-            ReviewReport report = llmReviewService.review(prNumber, chunks);
-            long reviewEndTime = (System.nanoTime() - reviewStartTime) / 1_000_000;
-            log.info("repo: {}/{} PR:#{}: LLM review completed in {}ms — {} comment(s)", owner, repo, prNumber, reviewEndTime, report.totalComments());
+            long reviewStartNs = System.nanoTime();
+            ReviewReport report = llmReviewTimer.record(() -> llmReviewService.review(prNumber, chunks));
+            long reviewDurationMs = (System.nanoTime() - reviewStartNs) / 1_000_000;
+            log.info("repo: {}/{} PR:#{}: LLM review completed in {}ms — {} comment(s)", owner, repo, prNumber, reviewDurationMs, report.totalComments());
 
             logReport(report);
 
@@ -68,6 +82,12 @@ public class PullRequestService {
             }
 
             log.info("repo: {}/{} PR:#{}: review outcome = {}", owner, repo, prNumber, outcome);
+
+            Counter.builder("reviews.processed")
+                    .description("Number of PR reviews completed")
+                    .tag("outcome", outcome.name())
+                    .register(meterRegistry)
+                    .increment();
 
             persistReview(event, owner, repo, prNumber, report);
 
