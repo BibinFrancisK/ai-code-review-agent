@@ -4,6 +4,7 @@ import com.codereviewer.model.PullRequestEvent;
 import com.codereviewer.model.ReviewOutcome;
 import com.codereviewer.model.ReviewReport;
 import com.codereviewer.repository.ReviewRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,8 +46,10 @@ class PullRequestServiceTest {
                 diffChunkerService,
                 llmReviewService,
                 reviewPublisherService,
-                reviewRepository
+                reviewRepository,
+                new SimpleMeterRegistry()
         );
+        service.initMetrics();
     }
 
     @Test

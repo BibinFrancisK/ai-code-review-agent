@@ -1,12 +1,15 @@
 package com.codereviewer.config;
 
 import com.codereviewer.util.Constants;
+import org.springframework.boot.web.client.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
 import java.util.concurrent.Executor;
 
 @Configuration
@@ -22,6 +25,16 @@ public class AppConfig {
         executor.setThreadNamePrefix("pr-review-");
         executor.initialize();
         return executor;
+    }
+
+    @Bean
+    public RestClientCustomizer githubRestClientTimeouts() {
+        return builder -> {
+            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+            factory.setConnectTimeout(Duration.ofSeconds(10));
+            factory.setReadTimeout(Duration.ofSeconds(30));
+            builder.requestFactory(factory);
+        };
     }
 
     @Bean
