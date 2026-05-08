@@ -129,6 +129,59 @@ class LLMReviewServiceTest {
         assertThat(report.totalComments()).isZero();
     }
 
+    //------------------
+    //Fallback scenarios
+
+    @Test
+    void outputWithNullComments_producesEmptyReport() {
+        // ReviewOutput with a null comments list — distinct from a null ReviewOutput itself
+        when(codeReviewAssistant.reviewPatch(anyString()))
+                .thenReturn(new ReviewOutput("summary", "LOW", null));
+
+        ReviewReport report = service.review(1, List.of(chunk("src/Foo.java")));
+
+        assertThat(report.totalComments()).isZero();
+        assertThat(report.getCommentsByFile()).doesNotContainKey("src/Foo.java");
+    }
+
+    @Test
+    void outputWithEmptyCommentsList_producesEmptyReport() {
+        when(codeReviewAssistant.reviewPatch(anyString()))
+                .thenReturn(new ReviewOutput("looks clean", "LOW", List.of()));
+
+        ReviewReport report = service.review(1, List.of(chunk("src/Bar.java")));
+
+        assertThat(report.totalComments()).isZero();
+    }
+
+    @Test
+    void multipleChunks_failedChunkSkipped_otherChunksIncluded() {
+        // Three chunks: first and last succeed, middle exhausts both retry attempts
+        DiffChunk first  = chunk("src/First.java");
+        DiffChunk middle = chunk("src/Middle.java");
+        DiffChunk last   = chunk("src/Last.java");
+
+        ReviewComment comment = new ReviewComment(1, "HIGH", "BUG", "issue found", "fix it");
+        ReviewOutput success = new ReviewOutput("ok", "HIGH", List.of(comment));
+
+        when(codeReviewAssistant.reviewPatch(anyString()))
+                .thenReturn(success)                              // first  – attempt 1 ok
+                .thenThrow(new RuntimeException("LLM timeout"))  // middle – attempt 1 fail
+                .thenThrow(new RuntimeException("LLM timeout"))  // middle – attempt 2 (retry) fail
+                .thenReturn(success);                             // last   – attempt 1 ok
+
+        ReviewReport report = service.review(1, List.of(first, middle, last));
+
+        assertThat(report.totalComments()).isEqualTo(2);
+        assertThat(report.getCommentsByFile()).containsKey("src/First.java");
+        assertThat(report.getCommentsByFile()).doesNotContainKey("src/Middle.java");
+        assertThat(report.getCommentsByFile()).containsKey("src/Last.java");
+    }
+
+    private static DiffChunk chunk(String filename) {
+        return new DiffChunk(filename, "java", "@@ -1,1 +1,1 @@\n+x", 1);
+    }
+
     private static ReviewOutput emptyOutput() {
         return new ReviewOutput("looks good", "LOW", List.of());
     }

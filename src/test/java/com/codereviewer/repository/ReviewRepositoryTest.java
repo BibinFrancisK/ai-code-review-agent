@@ -1,12 +1,15 @@
 package com.codereviewer.repository;
 
+import com.codereviewer.entity.ReviewCommentEntity;
 import com.codereviewer.entity.ReviewEntity;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.flywaydb.core.Flyway;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.junit.jupiter.api.BeforeAll;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -18,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,6 +51,16 @@ class ReviewRepositoryTest {
 
     @Autowired
     private ReviewRepository reviewRepository;
+
+    @Autowired
+    private TestEntityManager em;
+
+    @BeforeEach
+    void cleanUp() {
+        reviewRepository.deleteAll();
+    }
+
+    // --- query method tests ---
 
     @Test
     void findByOwnerAndRepo_paginatesAndSortsNewestFirst() {
@@ -91,15 +105,91 @@ class ReviewRepositoryTest {
         assertThat(results.get(0).getCreatedAt()).isAfterOrEqualTo(results.get(1).getCreatedAt());
     }
 
+    // --- cascade / orphan-removal tests ---
+
+    @Test
+    void cascadeSave_persistsParentAndChildren() {
+        ReviewEntity saved = reviewRepository.saveAndFlush(
+                reviewWithComment("src/Foo.java", 5, "HIGH", "BUG", "Null check missing", "Add null check"));
+        em.clear();
+
+        ReviewEntity reloaded = reviewRepository.findById(saved.getId()).orElseThrow();
+        assertThat(reloaded.getComments()).hasSize(1);
+        assertThat(reloaded.getComments().get(0).getId()).isNotNull();
+    }
+
+    @Test
+    void findById_returnsAllCommentFields() {
+        ReviewEntity saved = reviewRepository.saveAndFlush(
+                reviewWithComment("src/Bar.java", 10, "MEDIUM", "QUALITY", "Extract method", "Refactor into helper"));
+        em.clear();
+
+        ReviewCommentEntity comment = reviewRepository.findById(saved.getId())
+                .orElseThrow()
+                .getComments().get(0);
+
+        assertThat(comment.getFilename()).isEqualTo("src/Bar.java");
+        assertThat(comment.getLine()).isEqualTo(10);
+        assertThat(comment.getSeverity()).isEqualTo("MEDIUM");
+        assertThat(comment.getCategory()).isEqualTo("QUALITY");
+        assertThat(comment.getMessage()).isEqualTo("Extract method");
+        assertThat(comment.getSuggestion()).isEqualTo("Refactor into helper");
+        assertThat(comment.getGithubCommentId()).isNull();
+    }
+
+    @Test
+    void deleteReview_cascadesToComments() {
+        ReviewEntity saved = reviewRepository.saveAndFlush(
+                reviewWithComment("src/Baz.java", 1, "LOW", "STYLE", "Rename var", null));
+        Long reviewId = saved.getId();
+        em.clear();
+
+        reviewRepository.deleteById(reviewId);
+        em.flush();
+
+        assertThat(reviewRepository.findById(reviewId)).isEmpty();
+    }
+
+    @Test
+    void orphanRemoval_deletesRemovedComment() {
+        ReviewEntity saved = reviewRepository.saveAndFlush(
+                reviewWithComment("src/Qux.java", 3, "HIGH", "BUG", "NPE risk", "Guard null"));
+        em.clear();
+
+        ReviewEntity managed = reviewRepository.findById(saved.getId()).orElseThrow();
+        managed.getComments().clear();
+        reviewRepository.saveAndFlush(managed);
+        em.clear();
+
+        Optional<ReviewEntity> reloaded = reviewRepository.findById(saved.getId());
+        assertThat(reloaded).isPresent();
+        assertThat(reloaded.get().getComments()).isEmpty();
+    }
+
     private void save(String owner, String repo, int prNumber, LocalDateTime createdAt) {
         reviewRepository.save(ReviewEntity.builder()
-                .owner(owner)
-                .repo(repo)
-                .prNumber(prNumber)
-                .prTitle("PR " + prNumber)
-                .overallRisk("LOW")
-                .commentCount(0)
+                .owner(owner).repo(repo).prNumber(prNumber)
+                .prTitle("PR " + prNumber).overallRisk("LOW").commentCount(0)
                 .createdAt(createdAt)
                 .build());
+    }
+
+    private ReviewEntity reviewWithComment(String filename, int line, String severity,
+                                           String category, String message, String suggestion) {
+        ReviewEntity review = ReviewEntity.builder()
+                .owner("owner").repo("repo").prNumber(1)
+                .prTitle("Test PR").overallRisk("LOW").commentCount(0)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        ReviewCommentEntity comment = ReviewCommentEntity.builder()
+                .review(review)
+                .filename(filename).line(line)
+                .severity(severity).category(category)
+                .message(message).suggestion(suggestion)
+                .build();
+
+        review.getComments().add(comment);
+        return review;
     }
 }
