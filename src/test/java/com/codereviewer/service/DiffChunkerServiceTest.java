@@ -134,6 +134,65 @@ class DiffChunkerServiceTest {
                 .containsExactly("java", "typescript", "python", "plaintext");
     }
 
+    @Test
+    void lineNumbers_singleHunk_mapsCorrectly() {
+        // @@ -1,5 +1,7 @@ → new-file starts at 1; two context lines precede the first addition
+        String patch = """
+                @@ -1,5 +1,7 @@
+                 context line 1
+                 context line 2
+                +added at new-file line 3
+                 context line 4
+                 context line 5
+                +added at new-file line 6
+                +added at new-file line 7""";
+
+        List<DiffChunk> chunks = service.chunk(List.of(file("Foo.java", patch)));
+
+        assertThat(chunks).hasSize(1);
+        assertThat(chunks.get(0).startLine()).isEqualTo(1);
+        assertThat(chunks.get(0).content()).contains("+added at new-file line 3");
+    }
+
+    @Test
+    void lineNumbers_multipleHunks_eachStartsAtCorrectOffset() {
+        // Two hunks at different positions in the new file — each must carry its own startLine
+        String patch = """
+                @@ -1,3 +1,4 @@
+                 context
+                -removed line
+                +replacement line
+                +added new line
+                 context
+                @@ -20,3 +21,3 @@
+                 context
+                -removed
+                +replaced
+                 context""";
+
+        List<DiffChunk> chunks = service.chunk(List.of(file("Multi.java", patch)));
+
+        assertThat(chunks).hasSize(2);
+        assertThat(chunks.get(0).startLine()).isEqualTo(1);
+        assertThat(chunks.get(1).startLine()).isEqualTo(21);
+    }
+
+    @Test
+    void lineNumbers_additionOnlyHunk_noOldLines() {
+        // @@ -0,0 +1,20 @@ is the standard new-file header (no old content)
+        StringBuilder sb = new StringBuilder("@@ -0,0 +1,20 @@");
+        for (int i = 1; i <= 20; i++) {
+            sb.append("\n+added line ").append(i);
+        }
+
+        List<DiffChunk> chunks = service.chunk(List.of(file("NewFile.java", sb.toString())));
+
+        assertThat(chunks).hasSize(1);
+        assertThat(chunks.get(0).startLine()).isEqualTo(1);
+        assertThat(chunks.get(0).content()).contains("+added line 1");
+        assertThat(chunks.get(0).content()).contains("+added line 20");
+    }
+
     private static PullRequestFile file(String filename, String patch) {
         return new PullRequestFile(filename, patch, "modified", 1, 0);
     }

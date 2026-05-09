@@ -64,7 +64,7 @@ class CodeReviewAssistantSmokeTest {
 
     @Test
     void smokeTest_cleanPatch_returnsPositiveReview() {
-        ReviewOutput result = codeReviewAssistant.reviewPatch(buildPrompt("MathUtils.java", CLEAN_PATCH));
+        ReviewOutput result = codeReviewAssistant.reviewPatch(buildPrompt("MathUtils.java", CLEAN_PATCH), ReviewPrompts.expertiseFor("java"));
 
         assertThat(result).isNotNull();
         assertThat(result.summary()).isNotBlank();
@@ -74,7 +74,7 @@ class CodeReviewAssistantSmokeTest {
 
     @Test
     void smokeTest_sqlInjectionPatch_identifiesSecurityIssue() {
-        ReviewOutput result = codeReviewAssistant.reviewPatch(buildPrompt("UserRepository.java", SQL_INJECTION_PATCH));
+        ReviewOutput result = codeReviewAssistant.reviewPatch(buildPrompt("UserRepository.java", SQL_INJECTION_PATCH), ReviewPrompts.expertiseFor("java"));
 
         assertThat(result).isNotNull();
         assertThat(result.summary()).isNotBlank();
@@ -90,7 +90,7 @@ class CodeReviewAssistantSmokeTest {
 
     @Test
     void smokeTest_nullCheckPatch_identifiesBug() {
-        ReviewOutput result = codeReviewAssistant.reviewPatch(buildPrompt("UserService.java", NULL_CHECK_PATCH));
+        ReviewOutput result = codeReviewAssistant.reviewPatch(buildPrompt("UserService.java", NULL_CHECK_PATCH), ReviewPrompts.expertiseFor("java"));
 
         assertThat(result).isNotNull();
         assertThat(result.summary()).isNotBlank();

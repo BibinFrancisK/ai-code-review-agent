@@ -38,13 +38,14 @@ public class LLMReviewService {
 
     private ReviewOutput callWithRetry(DiffChunk chunk) {
         String prompt = buildPrompt(chunk);
+        String expertise = ReviewPrompts.expertiseFor(chunk.language());
         try {
-            return codeReviewAssistant.reviewPatch(prompt);
+            return codeReviewAssistant.reviewPatch(prompt, expertise);
         } catch (Exception first) {
             log.warn("LLM call failed for {} (startLine={}), retrying once: {}",
                     chunk.filename(), chunk.startLine(), first.getMessage());
             try {
-                return codeReviewAssistant.reviewPatch(prompt);
+                return codeReviewAssistant.reviewPatch(prompt, expertise);
             } catch (Exception second) {
                 log.error("LLM retry also failed for {} (startLine={}), skipping chunk: {}",
                         chunk.filename(), chunk.startLine(), second.getMessage());

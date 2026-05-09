@@ -24,8 +24,8 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Run tests
-        run: mvn -B test
+      - name: Run tests and check coverage
+        run: mvn -B verify
 
       - name: Build Docker image
         run: docker build -t ai-code-reviewer .

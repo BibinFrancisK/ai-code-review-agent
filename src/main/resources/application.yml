@@ -22,3 +22,16 @@ google:
   gemini:
     api-key: ${GOOGLE_GEMINI_API_KEY}
     model: ${GOOGLE_GEMINI_MODEL:gemini-flash-latest}
+
+# do not include stacktrace, binding errors etc. in API responses.
+server:
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
