@@ -85,4 +85,26 @@ class GitHubApiServiceTest {
         assertThat(info.headSha()).isEqualTo("abc123");
         assertThat(info.baseSha()).isEqualTo("def456");
     }
+
+    @Test
+    void postReview_postsToCorrectUrl() {
+        server.expect(requestTo("https://api.github.com/repos/owner/repo/pulls/42/reviews"))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+
+        gitHubApiService.postReview("owner", "repo", 42, "review summary", List.of());
+
+        server.verify();
+    }
+
+    @Test
+    void postIssueFallbackComment_postsToCorrectUrl() {
+        server.expect(requestTo("https://api.github.com/repos/owner/repo/issues/42/comments"))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withSuccess("{}", MediaType.APPLICATION_JSON));
+
+        gitHubApiService.postIssueFallbackComment("owner", "repo", 42, "fallback body");
+
+        server.verify();
+    }
 }

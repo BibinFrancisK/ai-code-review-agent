@@ -19,6 +19,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,6 +71,34 @@ class WebhookControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"action\":\"opened\"}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void pullRequestEvent_withValidSignature_callsServiceAndReturns202() throws Exception {
+        String body = "{\"action\":\"opened\"}";
+
+        mockMvc.perform(post("/webhook/github")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-GitHub-Event", "pull_request")
+                        .header(SIGNATURE_HEADER, computeSignature(TEST_SECRET, body))
+                        .content(body))
+                .andExpect(status().isAccepted());
+
+        verify(pullRequestService).handlePullRequestEvent(any());
+    }
+
+    @Test
+    void nonPullRequestEvent_withValidSignature_doesNotCallService() throws Exception {
+        String body = "{\"action\":\"opened\"}";
+
+        mockMvc.perform(post("/webhook/github")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-GitHub-Event", "push")
+                        .header(SIGNATURE_HEADER, computeSignature(TEST_SECRET, body))
+                        .content(body))
+                .andExpect(status().isAccepted());
+
+        verify(pullRequestService, never()).handlePullRequestEvent(any());
     }
 
     private static String computeSignature(String secret, String body) throws Exception {

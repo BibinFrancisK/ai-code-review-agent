@@ -85,6 +85,20 @@ class WebhookSignatureFilterTest {
     }
 
     @Test
+    void oversizedPayload_returns413() throws Exception {
+        MockHttpServletRequest request = webhookRequest("body".getBytes(StandardCharsets.UTF_8));
+        request.addHeader("Content-Length", "10485761"); // 1 byte over the 10 MB limit
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockFilterChain chain = new MockFilterChain();
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(response.getStatus()).isEqualTo(413);
+        assertThat(chain.getRequest()).isNull();
+    }
+
+    @Test
     void wrongAlgorithmPrefix_returns401() throws Exception {
         String body = "{\"action\":\"opened\"}";
         // Compute a correct SHA-256 HMAC then swap the "sha256=" prefix for "sha1="

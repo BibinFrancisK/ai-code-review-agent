@@ -2,6 +2,7 @@ package com.codereviewer.service;
 
 import com.codereviewer.model.GitHubReviewComment;
 import com.codereviewer.model.ReviewComment;
+import com.codereviewer.model.ReviewOutcome;
 import com.codereviewer.model.ReviewReport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,10 +10,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -174,6 +181,36 @@ class ReviewPublisherServiceTest {
         assertThat(sent).hasSize(2);
         assertThat(sent).extracting(GitHubReviewComment::path)
                 .containsExactlyInAnyOrder("A.java", "B.java");
+    }
+
+    @Test
+    void publish_returnsPosted_onSuccess() {
+        ReviewOutcome outcome = reviewPublisherService.publish("o", "r", 1, emptyReport());
+
+        assertThat(outcome).isEqualTo(ReviewOutcome.POSTED);
+    }
+
+    @Test
+    void publish_fallbackToIssueComment_whenReviewPostFails() {
+        doThrow(new RestClientException("server error"))
+                .when(gitHubApiService).postReview(any(), any(), anyInt(), any(), any());
+
+        ReviewOutcome outcome = reviewPublisherService.publish("o", "r", 1, emptyReport());
+
+        assertThat(outcome).isEqualTo(ReviewOutcome.FALLBACK_POSTED);
+        verify(gitHubApiService).postIssueFallbackComment(eq("o"), eq("r"), eq(1), anyString());
+    }
+
+    @Test
+    void publish_returnsFailed_whenBothPostsFail() {
+        doThrow(new RestClientException("primary fail"))
+                .when(gitHubApiService).postReview(any(), any(), anyInt(), any(), any());
+        doThrow(new RestClientException("fallback fail"))
+                .when(gitHubApiService).postIssueFallbackComment(any(), any(), anyInt(), any());
+
+        ReviewOutcome outcome = reviewPublisherService.publish("o", "r", 1, emptyReport());
+
+        assertThat(outcome).isEqualTo(ReviewOutcome.FAILED);
     }
 
     private static ReviewReport emptyReport() {
