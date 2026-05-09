@@ -3,6 +3,7 @@
 > Automatically reviews GitHub PRs using LLM analysis — posts inline comments for bugs, security vulnerabilities, and performance anti-patterns.
 
 [![CI](https://github.com/BibinFrancisK/ai-code-review-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/BibinFrancisK/ai-code-review-agent/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen)](target/site/jacoco/index.html)
 [![Docker](https://img.shields.io/docker/pulls/bibinfrancisk/ai-code-reviewer)](https://hub.docker.com/r/bibinfrancisk/ai-code-reviewer)
 ![Status](https://img.shields.io/badge/status-in%20progress-yellow)
 

@@ -1,13 +1,37 @@
 package com.codereviewer.ai;
 
+import java.util.Map;
+
 public final class ReviewPrompts {
 
     private ReviewPrompts() {}
 
+    private static final Map<String, String> LANGUAGE_EXPERTISE = Map.ofEntries(
+            Map.entry("java",       "Java and Spring Boot, with focus on JVM performance and enterprise patterns"),
+            Map.entry("kotlin",     "Kotlin and JVM development, including coroutines and Android patterns"),
+            Map.entry("scala",      "Scala and functional JVM development"),
+            Map.entry("python",     "Python, with familiarity with Django, FastAPI, and Pythonic idioms"),
+            Map.entry("javascript", "JavaScript and Node.js, including async patterns and the npm ecosystem"),
+            Map.entry("typescript", "TypeScript, React, and Node.js, with strong focus on type safety"),
+            Map.entry("go",         "Go, with focus on idiomatic Go, goroutines, and error handling"),
+            Map.entry("rust",       "Rust, with deep focus on ownership, borrowing, and memory safety"),
+            Map.entry("csharp",     "C# and .NET, including ASP.NET Core and LINQ patterns"),
+            Map.entry("ruby",       "Ruby and Rails, with focus on idiomatic Ruby and MVC patterns"),
+            Map.entry("php",        "PHP and modern frameworks like Laravel and Symfony"),
+            Map.entry("swift",      "Swift and iOS/macOS development, including UIKit and SwiftUI"),
+            Map.entry("sql",        "SQL and relational database design, with focus on query optimisation"),
+            Map.entry("terraform",  "Terraform and infrastructure-as-code, with cloud provider best practices"),
+            Map.entry("dockerfile", "Docker and container best practices, including layer optimisation and security")
+    );
+
+    public static String expertiseFor(String language) {
+        return LANGUAGE_EXPERTISE.getOrDefault(language, language + " development best practices");
+    }
+
     public static final String SYSTEM_PROMPT =
             """
-            You are an expert Java code reviewer with deep knowledge of Spring Boot,
-            security (OWASP Top 10), performance, and enterprise architecture.
+            You are an expert code reviewer specialising in {{expertise}},
+            with deep knowledge of security (OWASP Top 10), performance, and clean architecture.
 
             Review the provided code diff and identify issues.
 

@@ -88,6 +88,14 @@ public final class Constants {
     public static final String HEADER_ACCEPT = "Accept";
     public static final String BEARER_PREFIX = "Bearer ";
 
+    // Rate limiting
+    public static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
+    public static final String HEADER_RETRY_AFTER = "Retry-After";
+    public static final int RATE_LIMIT_REQUESTS_PER_MINUTE = 60;
+
+    // Payload size limit (10 MB)
+    public static final int MAX_PAYLOAD_BYTES = 10_485_760;
+
     // Webhook
     public static final String GITHUB_SIGNATURE_HEADER = "X-Hub-Signature-256";
     public static final String HMAC_ALGORITHM = "HmacSHA256";

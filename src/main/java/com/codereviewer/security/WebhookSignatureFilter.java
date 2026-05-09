@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -22,7 +23,7 @@ import java.util.HexFormat;
 
 @Slf4j
 @Component
-@Order(1) // Sets the priority of this filter relative to other filters in the chain. Lower number = higher priority = runs first.
+@Order(1)
 public class WebhookSignatureFilter extends OncePerRequestFilter { //called at most once per request, even if the request is dispatched multiple times internally.
 
     private final GitHubConfig gitHubConfig;
@@ -38,8 +39,20 @@ public class WebhookSignatureFilter extends OncePerRequestFilter { //called at m
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
+
+        String contentLengthHeader = request.getHeader("Content-Length");
+        if (contentLengthHeader != null) {
+            try {
+                if (Long.parseLong(contentLengthHeader) > Constants.MAX_PAYLOAD_BYTES) {
+                    response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Payload too large");
+                    return;
+                }
+            } catch (NumberFormatException nfe) {
+                log.warn("Ignoring malformed header as body read enforces cap.");
+            }
+        }
 
         String signatureHeader = request.getHeader(Constants.GITHUB_SIGNATURE_HEADER);
         if (signatureHeader == null) {
@@ -48,7 +61,11 @@ public class WebhookSignatureFilter extends OncePerRequestFilter { //called at m
             return;
         }
 
-        byte[] rawBody = request.getInputStream().readAllBytes();
+        byte[] rawBody = request.getInputStream().readNBytes(Constants.MAX_PAYLOAD_BYTES + 1);
+        if (rawBody.length > Constants.MAX_PAYLOAD_BYTES) {
+            response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Payload too large");
+            return;
+        }
 
         try {
             Mac mac = Mac.getInstance(Constants.HMAC_ALGORITHM);

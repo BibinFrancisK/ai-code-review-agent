@@ -1,4 +1,4 @@
-package com.codereviewer.controller;
+package com.codereviewer.exception;
 
 import com.codereviewer.util.Constants;
 import jakarta.servlet.http.HttpServletRequest;
