@@ -55,6 +55,23 @@ jobs:
             --output text)
           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
 
+      - name: Wait for SSM agent to come online
+        run: |
+          echo "Polling until SSM agent is Online (max 5 min)..."
+          for i in $(seq 1 20); do
+            STATUS=$(aws ssm describe-instance-information \
+              --filters "Key=InstanceIds,Values=$INSTANCE_ID" \
+              --query "InstanceInformationList[0].PingStatus" \
+              --output text 2>/dev/null || echo "None")
+            echo "Attempt $i/20: PingStatus=$STATUS"
+            if [ "$STATUS" = "Online" ]; then break; fi
+            sleep 15
+          done
+          if [ "$STATUS" != "Online" ]; then
+            echo "SSM agent did not come online in time"
+            exit 1
+          fi
+
       - name: Redeploy app via SSM Run Command
         run: |
           COMMAND_ID=$(aws ssm send-command \
