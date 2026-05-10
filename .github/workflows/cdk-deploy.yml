@@ -44,3 +44,25 @@ jobs:
         run: |
           cdk deploy --require-approval never \
             --context dockerhubUsername=${{ secrets.DOCKERHUB_USERNAME }}
+
+      - name: Get EC2 instance ID
+        run: |
+          INSTANCE_ID=$(aws cloudformation describe-stack-resource \
+            --stack-name AiCodeReviewerStack \
+            --logical-resource-id AppInstance \
+            --query StackResourceDetail.PhysicalResourceId \
+            --output text)
+          echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
+
+      - name: Redeploy app via SSM Run Command
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=["/usr/local/bin/redeploy.sh"]' \
+            --comment "Redeploy after image push" \
+            --query Command.CommandId --output text)
+          echo "SSM command ID: $COMMAND_ID"
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID"

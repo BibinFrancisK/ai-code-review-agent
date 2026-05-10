@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Smoke test for the LLM integration.
- * See src/test/README.md for setup and run instructions.
+ * See docs/TESTING.md for setup and run instructions.
  */
 @Disabled("Run on a need-basis")
 @SpringBootTest

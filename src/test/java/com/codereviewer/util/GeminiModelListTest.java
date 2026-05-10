@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * Lists all Gemini models available for your API key that support generateContent.
- * See src/test/README.md for setup and run instructions.
+ * See docs/TESTING.md for setup and run instructions.
  */
 @Disabled("Run on a need-basis")
 @SpringBootTest

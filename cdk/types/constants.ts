@@ -15,10 +15,9 @@ export const PLACEHOLDER_DOCKERHUB_USERNAME = '__DOCKERHUB_USERNAME__';
 
 // IAM
 export const MANAGED_POLICY_SSM_READ_ONLY = 'AmazonSSMReadOnlyAccess';
+export const MANAGED_POLICY_SSM_MANAGED_INSTANCE_CORE = 'AmazonSSMManagedInstanceCore';
 export const KMS_ACTION_DECRYPT = 'kms:Decrypt';
 export const KMS_SSM_KEY_ALIAS = 'alias/aws/ssm';
 
 // CloudWatch Logs
-export const CW_LOG_GROUP_APP = '/ai-code-reviewer/app';
-export const CW_LOG_GROUP_DB  = '/ai-code-reviewer/db';
 export const CW_LOGS_RESOURCE = 'arn:aws:logs:*:*:log-group:/ai-code-reviewer/*';
