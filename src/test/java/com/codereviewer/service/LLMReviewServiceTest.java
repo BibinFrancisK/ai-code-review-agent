@@ -75,19 +75,19 @@ class LLMReviewServiceTest {
     }
 
     @Test
-    void adjustLine_shiftsCommentToAbsoluteLineNumber() {
-        // Chunk starts at new-file line 10; LLM reports comment at chunk-relative line 3
-        // Expected absolute line = 3 + 10 - 1 = 12
+    void adjustLine_passesAbsoluteLineNumberFromAnnotatedDiff() {
+        // Chunk starts at new-file line 10; diff is annotated with [10] so LLM returns 10 directly.
+        // adjustLine must not add any offset — line 10 in == line 10 out.
         DiffChunk chunk = new DiffChunk("src/Bar.java", "java", "@@ -10,3 +10,3 @@\n context", 10);
-        ReviewComment chunkRelativeComment = new ReviewComment(3, "LOW", "QUALITY", "msg", "fix");
+        ReviewComment absoluteComment = new ReviewComment(10, "LOW", "QUALITY", "msg", "fix");
         when(codeReviewAssistant.reviewPatch(anyString(), anyString()))
-                .thenReturn(new ReviewOutput("ok", "LOW", List.of(chunkRelativeComment)));
+                .thenReturn(new ReviewOutput("ok", "LOW", List.of(absoluteComment)));
 
         ReviewReport report = service.review(1, List.of(chunk));
 
         List<ReviewComment> comments = report.getCommentsByFile().get("src/Bar.java");
         assertThat(comments).hasSize(1);
-        assertThat(comments.get(0).line()).isEqualTo(12);
+        assertThat(comments.get(0).line()).isEqualTo(10);
     }
 
     @Test
