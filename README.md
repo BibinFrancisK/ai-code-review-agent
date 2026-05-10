@@ -124,13 +124,13 @@ Full interactive docs at `$HOST/swagger-ui.html`.
 
 ## Local Setup
 
-See [docs/README-local-dev.md](docs/README-local-dev.md) for the full local development guide.
+See [docs/LOCAL-DEV.md](docs/LOCAL-DEV.md) for the full local development guide.
 
 ---
 
 ## Deployment
 
-The app is deployed to AWS EC2 via TypeScript CDK and GitHub Actions. See [cdk/README.md](cdk/README.md) for one-time setup prerequisites and how the deployment pipeline works.
+The app is deployed to AWS EC2 via TypeScript CDK and GitHub Actions. See [docs/CDK.md](docs/CDK.md) for one-time setup prerequisites and how the deployment pipeline works.
 
 Every push to `main` triggers `cdk deploy` — CloudFormation diffs and updates the EC2 instance automatically.
 
