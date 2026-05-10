@@ -43,14 +43,15 @@ jobs:
         working-directory: cdk
         run: |
           cdk deploy --require-approval never \
-            --context dockerhubUsername=${{ secrets.DOCKERHUB_USERNAME }}
+            --context "dockerhubUsername=${{ secrets.DOCKERHUB_USERNAME }}"
 
       - name: Get EC2 instance ID
         run: |
-          INSTANCE_ID=$(aws cloudformation describe-stack-resource \
-            --stack-name AiCodeReviewerStack \
-            --logical-resource-id AppInstance \
-            --query StackResourceDetail.PhysicalResourceId \
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters \
+              "Name=tag:aws:cloudformation:stack-name,Values=AiCodeReviewerStack" \
+              "Name=instance-state-name,Values=running" \
+            --query "Reservations[0].Instances[0].InstanceId" \
             --output text)
           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
 

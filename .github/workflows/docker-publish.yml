@@ -36,6 +36,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"username\":\"$DOCKERHUB_USERNAME\",\"password\":\"$DOCKERHUB_TOKEN\"}" \
             | jq -r .token)
+          echo "::add-mask::$TOKEN"
 
           REPO="$DOCKERHUB_USERNAME/ai-code-reviewer"
 
