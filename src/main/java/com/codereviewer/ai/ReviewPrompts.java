@@ -57,7 +57,7 @@ public final class ReviewPrompts {
               "overallRisk": "LOW|MEDIUM|HIGH|CRITICAL",
               "comments": [
                 {
-                  "line": <integer — new file line number>,
+                  "line": <the [N] number shown at the start of the diff line being commented on>,
                   "severity": "CRITICAL|HIGH|MEDIUM|LOW",
                   "category": "BUG|SECURITY|PERFORMANCE|QUALITY",
                   "message": "What the issue is (1-2 sentences)",
@@ -75,7 +75,7 @@ public final class ReviewPrompts {
             Language: {language}
             Lines changed: +{additions} -{deletions}
 
-            Diff (line numbers reference the new file version):
+            Diff (added and context lines are prefixed with [N] — use that N as the "line" value):
             {diff_chunk}
 
             Review this diff. Focus only on the changed lines and their immediate context.

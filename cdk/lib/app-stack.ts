@@ -10,7 +10,6 @@ import {
   GITHUB_META_URL,
   KMS_ACTION_DECRYPT,
   KMS_SSM_KEY_ALIAS,
-  MANAGED_POLICY_SSM_MANAGED_INSTANCE_CORE,
   MANAGED_POLICY_SSM_READ_ONLY,
   PLACEHOLDER_DOCKERHUB_USERNAME,
   PLACEHOLDER_REGION,
@@ -39,7 +38,6 @@ export class AppStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName(MANAGED_POLICY_SSM_READ_ONLY),
-        iam.ManagedPolicy.fromAwsManagedPolicyName(MANAGED_POLICY_SSM_MANAGED_INSTANCE_CORE),
       ],
       inlinePolicies: {
         SsmKmsDecrypt: new iam.PolicyDocument({

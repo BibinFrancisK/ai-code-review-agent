@@ -55,6 +55,7 @@ public class LLMReviewService {
     }
 
     private String buildPrompt(DiffChunk chunk) {
+        String annotated = annotateWithLineNumbers(chunk);
         long additions = chunk.content().lines()
                 .filter(l -> l.startsWith("+") && !l.startsWith("+++"))
                 .count();
@@ -67,13 +68,33 @@ public class LLMReviewService {
                 .replace("{language}", chunk.language())
                 .replace("{additions}", String.valueOf(additions))
                 .replace("{deletions}", String.valueOf(deletions))
-                .replace("{diff_chunk}", chunk.content());
+                .replace("{diff_chunk}", annotated);
     }
 
-    // ReviewComment.line is chunk-relative; shift it to an absolute new-file line number
+    // Prefix every added (+) and context ( ) line with [N] so the LLM can read
+    // the exact new-file line number and return it verbatim — no offset math needed.
+    private String annotateWithLineNumbers(DiffChunk chunk) {
+        StringBuilder sb = new StringBuilder();
+        int lineNum = chunk.startLine();
+        for (String line : chunk.content().split("\n", -1)) {
+            if (line.isEmpty()) {
+                sb.append('\n');
+                continue;
+            }
+            char first = line.charAt(0);
+            if ((first == '+' && !line.startsWith("+++")) || first == ' ') {
+                sb.append('[').append(lineNum++).append("] ").append(line).append('\n');
+            } else {
+                sb.append(line).append('\n');
+            }
+        }
+        return sb.toString().stripTrailing();
+    }
+
+    // LLM now returns the [N] value directly from the annotated diff — no offset needed.
     private ReviewComment adjustLine(ReviewComment comment, int chunkStartLine) {
-        int absoluteLine = comment.line() + chunkStartLine - 1;
-        return new ReviewComment(absoluteLine, comment.severity(), comment.category(),
+        int line = comment.line() > 0 ? comment.line() : chunkStartLine;
+        return new ReviewComment(line, comment.severity(), comment.category(),
                 comment.message(), comment.suggestion());
     }
 }
