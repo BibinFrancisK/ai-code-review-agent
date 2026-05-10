@@ -15,7 +15,6 @@ export const PLACEHOLDER_DOCKERHUB_USERNAME = '__DOCKERHUB_USERNAME__';
 
 // IAM
 export const MANAGED_POLICY_SSM_READ_ONLY = 'AmazonSSMReadOnlyAccess';
-export const MANAGED_POLICY_SSM_MANAGED_INSTANCE_CORE = 'AmazonSSMManagedInstanceCore';
 export const KMS_ACTION_DECRYPT = 'kms:Decrypt';
 export const KMS_SSM_KEY_ALIAS = 'alias/aws/ssm';
 
